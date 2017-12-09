@@ -26,7 +26,6 @@ def clean_str(string):
     return string.strip().lower()
 
 
-
 def load_data_and_labels(data_file, config, max_length):
     """
     Loads MR polarity data from files, splits the data into words and generates labels.
@@ -101,16 +100,12 @@ def build_input_data(sentences, labels, vocabulary):
     return [x, y]
 
 
-
-
 def load_data(train_file, config, max_length=100, vocabulary=None):
     """
     Loads and preprocessed data for the MR dataset.
     Returns input vectors, labels, vocabulary, and inverse vocabulary.
     """
     # Load and preprocess data
-    if train_file == '':
-        get_chinese_text()
     sentences, labels, n_class = load_data_and_labels(train_file, config, max_length)
     sentences_padded = pad_sentences(sentences, max_length)
     vocabulary_inv = None
@@ -120,21 +115,27 @@ def load_data(train_file, config, max_length=100, vocabulary=None):
     return [x, y, vocabulary, vocabulary_inv, n_class]
 
 
-def load_test_data(test_file, max_length=100, vocabulary=None):
+def load_test_data(test_file, max_length=100, vocabulary=None, evaluation=False):
     """
     Loads and preprocessed data for the MR dataset.
     Returns input vectors, labels, vocabulary, and inverse vocabulary.
     """
     contents = util.read_txt(test_file)
-    x_text = [line[:max_length] for line in contents]
+    lines = [line[:max_length] for line in contents]
+    labels = []
+    x_text = []
+    if evaluation is False:
+        x_text = [s.split() for s in lines]
+    else:
+        for line in lines:
+            line = line.split(' <> ')
+            x_text.append(line[1].split())
+            labels.append(line[0])
 
-    # x_text = [clean_str(sent) for sent in x_text]
-    x_text = [s.split() for s in x_text]
-    # Load and preprocess data
     sentences_padded = pad_sentences(x_text, max_length)
     vocabulary = util.read_pickle(vocabulary)
     x = np.array([[vocabulary.get(word, 0) for word in sentence] for sentence in sentences_padded])
-    return x, contents
+    return x, contents, labels
 
 
 def batch_iter(data, batch_size, num_epochs):
