@@ -2,7 +2,6 @@ import numpy as np
 import re
 import itertools
 from collections import Counter
-import os
 import util
 
 
@@ -26,16 +25,6 @@ def clean_str(string):
     string = re.sub(r"\s{2,}", " ", string)
     return string.strip().lower()
 
-
-def get_chinese_text():
-    if not os.path.isdir("data/"):
-        os.system("mkdir data/")
-    if not os.path.exists('data/pos.txt') or not os.path.exists('data/neg.txt'):
-        os.system(
-            "wget -q https://raw.githubusercontent.com/dmlc/web-data/master/mxnet/example/chinese_text.zip -P data/")
-        os.chdir("./data")
-        os.system("unzip -u chinese_text.zip")
-        os.chdir("..")
 
 
 def load_data_and_labels(data_file, config, max_length):

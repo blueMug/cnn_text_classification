@@ -58,7 +58,8 @@ if __name__ == '__main__':
         result.append(label_name[int(label.asscalar())] + ' <> ' + sentence)
     output = args.output
     if output == '':
-        print(result)
+        for line in result:
+            print(line)
     else:
         util.save_to_txt(output, result)
     logger.info('finished...')
