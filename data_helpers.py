@@ -43,21 +43,18 @@ def load_data_and_labels(data_file, config, max_length):
     label_dict = util.read_txt_to_dict(config)
     #
     n_class = len(label_dict)
-    one_hot = np.zeros(shape=n_class, dtype=int)
     x_text = []
     y_text = []
     for t in trains:
         line = t.split(' <> ')
         if len(line) < 2:
             continue
-        x_text.append(line[1][:max_length])
+        x_text.append(line[1].split()[:max_length])
         label_num = label_dict[line[0].strip()]
-        cur_label = np.copy(one_hot)
-        cur_label[label_num] = 1
-        y_text.append(cur_label)
+        y_text.append(label_num)
 
     # x_text = [clean_str(sent) for sent in x_text]
-    x_text = [s.split() for s in x_text]
+    # x_text = [s.split() for s in x_text]
 
     return [x_text, y_text, n_class]
 
@@ -115,27 +112,34 @@ def load_data(train_file, config, max_length=100, vocabulary=None):
     return [x, y, vocabulary, vocabulary_inv, n_class]
 
 
-def load_test_data(test_file, max_length=100, vocabulary=None, evaluation=False):
+def load_test_data(test_file, max_length=100, vocabulary=None, config=None):
     """
     Loads and preprocessed data for the MR dataset.
     Returns input vectors, labels, vocabulary, and inverse vocabulary.
     """
     contents = util.read_txt(test_file)
-    lines = [line[:max_length] for line in contents]
+    lines = [line for line in contents]
     labels = []
     x_text = []
-    if evaluation is False:
-        x_text = [s.split() for s in lines]
+    y = None
+    if config is None:
+        x_text = [s.split()[:max_length] for s in lines]
     else:
+        y_text = []
+        label_dict = util.read_txt_to_dict(config)
         for line in lines:
             line = line.split(' <> ')
-            x_text.append(line[1].split())
+            x_text.append(line[1].split()[:max_length])
             labels.append(line[0])
+            label_num = label_dict[line[0].strip()]
+            y_text.append(label_num)
+        y = np.array(y_text)
 
     sentences_padded = pad_sentences(x_text, max_length)
     vocabulary = util.read_pickle(vocabulary)
     x = np.array([[vocabulary.get(word, 0) for word in sentence] for sentence in sentences_padded])
-    return x, contents, labels
+
+    return x, contents, labels, y
 
 
 def batch_iter(data, batch_size, num_epochs):

@@ -62,16 +62,16 @@ def save_model(checkname):
     return mx.callback.do_checkpoint("checkpoint/"+checkname, args.save_period)
 
 
-def highway(data):
+def highway(data, num_hidden):
     _data = data
     high_weight = mx.sym.Variable('high_weight')
     high_bias = mx.sym.Variable('high_bias')
-    high_fc = mx.sym.FullyConnected(data=data, weight=high_weight, bias=high_bias, num_hidden=300, name='high_fc')
+    high_fc = mx.sym.FullyConnected(data=data, weight=high_weight, bias=high_bias, num_hidden=num_hidden, name='high_fc')
     high_relu = mx.sym.Activation(high_fc, act_type='relu')
 
     high_trans_weight = mx.sym.Variable('high_trans_weight')
     high_trans_bias = mx.sym.Variable('high_trans_bias')
-    high_trans_fc = mx.sym.FullyConnected(data=_data, weight=high_trans_weight, bias=high_trans_bias, num_hidden=300,
+    high_trans_fc = mx.sym.FullyConnected(data=_data, weight=high_trans_weight, bias=high_trans_bias, num_hidden=num_hidden,
                                           name='high_trans_sigmoid')
     high_trans_sigmoid = mx.sym.Activation(high_trans_fc, act_type='sigmoid')
 
@@ -132,7 +132,7 @@ def sym_gen(sentence_size, num_embed, vocab_size,
     h_pool = mx.sym.reshape(data=concat, shape=(-1, total_filters))
 
     # highway network
-    h_pool = highway(h_pool)
+    h_pool = highway(h_pool, total_filters)
 
     # dropout layer
     if dropout > 0.0:
@@ -152,7 +152,7 @@ def sym_gen(sentence_size, num_embed, vocab_size,
     return sm, ('data',), ('softmax_label',)
 
 
-def train(symbol, train_iter, valid_iter, data_names, label_names, checkname):
+def train(symbol, train_iter, valid_iter, data_names, label_names, checkname, optimizer, learning_rate):
     devs = mx.cpu() if args.gpus is None or args.gpus is '' else [
         mx.gpu(int(i)) for i in args.gpus.split(',')]
     module = mx.mod.Module(symbol, data_names=data_names, label_names=label_names, context=devs)
@@ -171,7 +171,7 @@ def train(symbol, train_iter, valid_iter, data_names, label_names, checkname):
     module.init_params(CustomInit(init_params))
     lr_sch = mx.lr_scheduler.FactorScheduler(step=25000, factor=0.999)
     module.init_optimizer(
-        optimizer='rmsprop', optimizer_params={'learning_rate': 0.0005, 'lr_scheduler': lr_sch})
+        optimizer=optimizer, optimizer_params={'learning_rate': learning_rate, 'lr_scheduler': lr_sch})
 
     def norm_stat(d):
         return mx.nd.norm(d) / np.sqrt(d.size)
@@ -200,4 +200,4 @@ if __name__ == '__main__':
                                               num_label=n_class, filter_list=[3, 4, 5], num_filter=100,
                                               dropout=args.dropout)
     # train cnn model
-    train(symbol, train_iter, valid_iter, data_names, label_names, args.model_name)
+    train(symbol, train_iter, valid_iter, data_names, label_names, args.model_name, args.optimizer, args.lr)
