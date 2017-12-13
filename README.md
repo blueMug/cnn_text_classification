@@ -6,9 +6,10 @@ However, I find the official codes are too simple to run a whole process, so I c
 
 ## The main difference with the official version
 - Inference code were added, one can use his trained model to do prediction
-- The NXNet version is 0.12.1, so some original functions may be deprecated
+- The MXNet version is 0.12.1, so some original functions may be deprecated
 - Binary classification tasks were changed to multi-category tasks
 - The codes about pretrained embedding were removed, data format were changed
+- Label shape were changed to (batch_size,)
 
 ## Data
 #### training and validation data
