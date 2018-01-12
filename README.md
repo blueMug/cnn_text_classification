@@ -4,6 +4,8 @@ Implementing  CNN Text Classification in MXNet
 Recently, I have been learning mxnet for Natural Language Processing (NLP). I followed this official code in [MXNet github](https://github.com/apache/incubator-mxnet/tree/master/example/cnn_chinese_text_classification).
 However, I find the official codes are too simple to run a whole process, so I changed it.
 
+RNN text classification in MXNet is [here](https://github.com/blueMug/rnn_text_classification).
+
 ## The main difference with the official version
 - Inference code were added, one can use his trained model to do prediction
 - The MXNet version is 0.12.1, so some original functions may be deprecated

@@ -1,4 +1,5 @@
 import pickle
+import os
 
 
 def read_txt(filename):
@@ -18,9 +19,12 @@ def read_txt_to_dict(filename):
     return label_dict
 
 
-def save_to_txt(filename, content):
-    with open(filename, 'w', encoding='utf-8') as f:
-        f.write('\n'.join(content))
+def save_to_pickle(filename, content):
+    dir_path = os.path.dirname(filename)
+    if not os.path.exists(dir_path):
+        os.makedirs(dir_path)
+    with open(filename, 'wb') as f:
+        pickle.dump(content, f)
 
 
 def save_to_pickle(filename, content):
@@ -32,5 +36,3 @@ def read_pickle(filename):
     pkl_file = open(filename, 'rb')
     data = pickle.load(pkl_file)
     return data
-
-# read_pickle('data/vocab.pkl')
